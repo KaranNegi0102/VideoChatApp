@@ -1,3 +1,4 @@
+// src/components/App.js
 import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import Peer from 'peerjs';
@@ -33,11 +34,14 @@ function App() {
       console.error('PeerJS error:', err);
     });
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
       .then((stream) => {
         console.log('Got local media stream');
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch((err) => console.error('Error playing video:', err));
+        }
 
         peer.on('call', (call) => {
           console.log('Receiving call from:', call.peer);
@@ -73,7 +77,7 @@ function App() {
     return () => {
       console.log('Cleaning up PeerJS and Socket.IO');
       socket.disconnect();
-      peer.destroy();
+      if (peerInstance.current) peerInstance.current.destroy();
     };
   }, [joined, roomId]);
 
@@ -106,43 +110,56 @@ function App() {
   };
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      <h1>Video Chat App</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Video Chat App</h1>
       {!joined ? (
-        <div>
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
           <input
             type="text"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
             placeholder="Enter Room ID"
-            style={{ padding: '5px', margin: '10px' }}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
           />
-          <button onClick={joinRoom} style={{ padding: '5px 10px' }}>
+          <button
+            onClick={joinRoom}
+            className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-colors duration-300"
+          >
             Join Room
           </button>
         </div>
       ) : (
-        <>
-          <div>
-            <h3>My Video (ID: {userId || 'Waiting for ID...'})</h3>
-            <video ref={videoRef} muted style={{ width: '300px', border: '1px solid black' }} />
+        <div className="w-full max-w-4xl space-y-6">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              My Video (ID: {userId || 'Waiting for ID...'})
+            </h3>
+            <video
+              ref={videoRef}
+              muted
+              className="w-full max-w-md rounded-lg border border-gray-300"
+            />
           </div>
-          <div>
-            <h3>Other Users in Room: {roomId}</h3>
-            {Object.entries(peers).map(([peerId, stream]) => (
-              <video
-                key={peerId}
-                ref={(ref) => {
-                  if (ref && !ref.srcObject) {
-                    ref.srcObject = stream;
-                    ref.play().catch((err) => console.error('Error playing video:', err));
-                  }
-                }}
-                style={{ width: '300px', border: '1px solid black', margin: '5px' }}
-              />
-            ))}
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Other Users in Room: {roomId}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {Object.entries(peers).map(([peerId, stream]) => (
+                <video
+                  key={peerId}
+                  ref={(ref) => {
+                    if (ref && !ref.srcObject) {
+                      ref.srcObject = stream;
+                      ref.play().catch((err) => console.error('Error playing video:', err));
+                    }
+                  }}
+                  className="w-full rounded-lg border border-gray-300"
+                />
+              ))}
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
