@@ -1,9 +1,9 @@
-// src/components/App.js
 import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import Peer from 'peerjs';
 
-const socket = io('http://localhost:5000');
+// Use ngrok URL later; start with localhost for testing
+const socket = io('https://54d2-114-142-166-238.ngrok-free.app');
 
 function App() {
   const [roomId, setRoomId] = useState('');
@@ -16,11 +16,11 @@ function App() {
   useEffect(() => {
     if (!joined) return;
 
-    // Initialize PeerJS with local server
     const peer = new Peer({
-      host: 'localhost',
-      port: 5001,
+      host: '54d2-114-142-166-238.ngrok-free.app', // Update to ngrok URL later
+      port: 443,
       path: '/peerjs',
+      secure: true,
     });
     peerInstance.current = peer;
 
