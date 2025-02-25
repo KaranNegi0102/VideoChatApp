@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import Peer from 'peerjs';
 
-// Use ngrok URL later; start with localhost for testing
+// Use your ngrok URL
 const socket = io('https://54d2-114-142-166-238.ngrok-free.app');
 
 function App() {
@@ -17,10 +17,10 @@ function App() {
     if (!joined) return;
 
     const peer = new Peer({
-      host: '54d2-114-142-166-238.ngrok-free.app', // Update to ngrok URL later
-      port: 443,
-      path: '/peerjs',
-      secure: true,
+      host: '54d2-114-142-166-238.ngrok-free.app', // Ngrok URL without https://
+      port: 443, // HTTPS port
+      path: '/peerjs', // Match server.js
+      secure: true, // Required for HTTPS
     });
     peerInstance.current = peer;
 

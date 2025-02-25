@@ -3,15 +3,23 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { ExpressPeerServer } = require('peer');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000', // Allow React frontend
+    origin: '*', // Allow all origins (ngrok requires this for testing)
     methods: ['GET', 'POST'],
   },
 });
+
+// Integrate PeerJS server into Express
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+  path: '/peerjs', // Match the path used in App.js
+});
+app.use('/peerjs', peerServer);
 
 app.use(cors());
 app.use(express.json());
@@ -23,6 +31,7 @@ mongoose.connect('mongodb+srv://karan0102:Gautamn49@mernapp.cyecl.mongodb.net/We
 }).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Socket.IO logic
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
