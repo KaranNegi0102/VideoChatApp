@@ -19,17 +19,15 @@ app.get('/', (req, res) => {
   res.send('Video chat server running');
 });
 
-// Store connected users
 let connectedUsers = [];
 
 io.on('connection', (socket) => {
-  // Add new user to the list
   const user = { id: socket.id };
   connectedUsers.push(user);
   console.log('User connected:', socket.id);
-  io.emit('user-list', connectedUsers.map((u) => u.id)); // Broadcast updated list
+  console.log('Current users:', connectedUsers.map((u) => u.id)); // Debug log
+  io.emit('user-list', connectedUsers.map((u) => u.id));
 
-  // Signaling for WebRTC
   socket.on('offer', (data) => {
     socket.broadcast.emit('offer', data);
   });
@@ -43,10 +41,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    // Remove user from the list
     connectedUsers = connectedUsers.filter((u) => u.id !== socket.id);
     console.log('User disconnected:', socket.id);
-    io.emit('user-list', connectedUsers.map((u) => u.id)); // Broadcast updated list
+    console.log('Current users:', connectedUsers.map((u) => u.id)); // Debug log
+    io.emit('user-list', connectedUsers.map((u) => u.id));
   });
 });
 
